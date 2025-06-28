@@ -65,11 +65,7 @@ Below is a GIF showcasing the MHTML File Extractor in action, demonstrating file
 
 ![MHTML Extractor Demo](demo.gif)
 
-*Note*: To create your own demo GIF, use a screen recording tool (e.g., OBS Studio, ScreenToGif) to capture the application workflow:
-1. Record selecting an MHTML file.
-2. Show the resource table populating with HTML, JavaScript, fonts, CSS, and images.
-3. Demonstrate selecting resources and extracting them.
-4. Save the recording as `demo.gif` in the repository root and update the path in this README.
+
 
 ## Contributing
 Contributions are welcome! Please submit issues or pull requests to the GitHub repository. Ensure code follows PEP 8 and includes tests for new features.

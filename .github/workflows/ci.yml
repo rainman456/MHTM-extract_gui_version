@@ -1,11 +1,10 @@
-name: Build MHTML Extractor Executables
+name: Build and Release MHTML Extractor Executables
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    tags:
+      - 'v*.*.*'  # Triggers on tags like v1.0.0
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   build-macos:
@@ -30,7 +29,6 @@ jobs:
           pyinstaller --name=MHTMLExtractor \
                       --windowed \
                       --add-data="mhtml_parser.py:." \
-                      --icon=icon.icns \
                       --onefile \
                       mhtml_extractor_gui.py
         env:
@@ -40,13 +38,25 @@ jobs:
         run: |
           hdiutil create -srcfolder dist/MHTMLExtractor.app -volname "MHTML Extractor" -format UDZO dist/MHTMLExtractor.dmg
 
-      - name: Upload macOS artifact
+      - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: MHTMLExtractor-macos
           path: |
             dist/MHTMLExtractor.app
             dist/MHTMLExtractor.dmg
+
+      - name: Create Release and Upload macOS Assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/MHTMLExtractor.app
+            dist/MHTMLExtractor.dmg
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-windows:
     runs-on: windows-latest
@@ -65,13 +75,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - Peach
       - name: Build Windows executable
         run: |
           pyinstaller --name=MHTMLExtractor \
                       --windowed \
                       --add-data="mhtml_parser.py;." \
-                      --icon=icon.ico \
                       --onefile \
                       mhtml_extractor_gui.py
 
@@ -80,6 +88,16 @@ jobs:
         with:
           name: MHTMLExtractor-windows
           path: dist/MHTMLExtractor.exe
+
+      - name: Create Release and Upload Windows Asset
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/MHTMLExtractor.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-linux:
     runs-on: ubuntu-latest
@@ -115,3 +133,13 @@ jobs:
         with:
           name: MHTMLExtractor-linux
           path: dist/MHTMLExtractor
+
+      - name: Create Release and Upload Linux Asset
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/MHTMLExtractor
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

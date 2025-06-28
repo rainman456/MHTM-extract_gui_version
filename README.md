@@ -57,8 +57,7 @@ The MHTML File Extractor is a desktop application built with **PyQt5** that allo
 ## Project Structure
 - `mhtml_extractor_gui.py`: Implements the PyQt5 GUI with file selection, preview tabs, resource table, and extraction controls.
 - `mhtml_parser.py`: Handles MHTML parsing, extracting embedded resources, inline JavaScript, and optionally downloading external scripts.
-- `README.md`: This file, providing project documentation.
-- `requirements.txt`: Lists required Python packages.
+
 
 ## Demonstration
 Below is a GIF showcasing the MHTML File Extractor in action, demonstrating file selection, resource preview, and extraction.

@@ -31,11 +31,8 @@ The MHTML File Extractor is a desktop application built with **PyQt5** that allo
    git clone https://github.com/yourusername/mhtml-extractor.git
    cd mhtml-extractor
    ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Ensure the following files are in the project directory:
+
+2. Ensure the following files are in the project directory:
    - `mhtml_extractor_gui.py`: The main GUI application.
    - `mhtml_parser.py`: The MHTML parsing module.
 

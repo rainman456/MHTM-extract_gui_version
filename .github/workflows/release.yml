@@ -159,4 +159,4 @@ jobs:
           files: artifacts/**
           tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.releases }}

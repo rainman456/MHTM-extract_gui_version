@@ -10,6 +10,9 @@ on:
         description: 'Tag to use for GitHub Release (e.g., v1.0.0)'
         required: true
 
+permissions:
+  contents: write  # Grant write access to create releases and upload assets
+
 jobs:
   build-macos:
     runs-on: macos-latest
@@ -27,16 +30,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
-      - name: Build macOS executable with PyInstaller and Strip
+      - name: Install UPX
+        run: |
+          brew install upx
+
+      - name: Build macOS executable with PyInstaller, UPX, and exclusions
         run: |
           pyinstaller --name=MHTMLExtractor \
                       --windowed \
                       --add-data="mhtm_parser3.py:." \
                       --onefile \
+                      --upx-dir /usr/local/bin \
                       --exclude-module=tkinter \
                       --exclude-module=test \
                       --exclude-module=pydoc \
                       --exclude-module=unittest \
+                      --exclude-module=matplotlib \
+                      --exclude-module=numpy \
+                      --exclude-module=pandas \
                       gui.py
         env:
           PYINSTALLER_NO_BUNDLE: 1
@@ -51,9 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MHTMLExtractor-macos
-          path: |
-            dist/MHTMLExtractor.app
-            dist/MHTMLExtractor.dmg
+          path: dist/MHTMLExtractor.dmg
 
   build-windows:
     runs-on: windows-latest
@@ -78,7 +87,19 @@ jobs:
 
       - name: Build Windows executable with UPX and exclusions
         run: |
-          pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtm_parser3.py;." --onefile --upx-dir upx-4.2.1-win64 --exclude-module=tkinter --exclude-module=unittest --exclude-module=test --exclude-module=pydoc gui.py
+          pyinstaller --name=MHTMLExtractor \
+                      --windowed \
+                      --add-data="mhtm_parser3.py;." \
+                      --onefile \
+                      --upx-dir upx-4.2.1-win64 \
+                      --exclude-module=tkinter \
+                      --exclude-module=unittest \
+                      --exclude-module=test \
+                      --exclude-module=pydoc \
+                      --exclude-module=matplotlib \
+                      --exclude-module=numpy \
+                      --exclude-module=pandas \
+                      gui.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -102,7 +123,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
-      - name: Install system libraries for PyQt
+      - name: Install system libraries for PyQt and UPX
         run: |
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-x11-0 libxcb-randr0 libxcb-xtest0 libxcb-xinerama0 libxcb-shape0 libxcb-xfixes0 upx-ucl
@@ -112,11 +133,14 @@ jobs:
           pyinstaller --name=MHTMLExtractor \
                       --add-data="mhtm_parser3.py:." \
                       --onefile \
+                      --upx-dir /usr/bin \
                       --exclude-module=tkinter \
                       --exclude-module=test \
                       --exclude-module=unittest \
                       --exclude-module=pydoc \
-                      --upx-dir /usr/bin \
+                      --exclude-module=matplotlib \
+                      --exclude-module=numpy \
+                      --exclude-module=pandas \
                       gui.py
 
       - name: Make executable
@@ -155,7 +179,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**
+          files: |
+            artifacts/MHTMLExtractor.dmg
+            artifacts/MHTMLExtractor.exe
+            artifacts/MHTMLExtractor
           tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

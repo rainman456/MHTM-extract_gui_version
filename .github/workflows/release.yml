@@ -23,12 +23,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
-      - name: Build macOS executable
+      - name: Build macOS executable with PyInstaller and Strip
         run: |
           pyinstaller --name=MHTMLExtractor \
                       --windowed \
                       --add-data="mhtm_parser3.py:." \
                       --onefile \
+                      --exclude-module=tkinter \
+                      --exclude-module=test \
+                      --exclude-module=pydoc \
+                      --exclude-module=unittest \
                       gui.py
         env:
           PYINSTALLER_NO_BUNDLE: 1
@@ -63,8 +67,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
-      - name: Build Windows executable
-        run: pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtm_parser3.py;." --onefile gui.py
+      - name: Download and Setup UPX
+        run: |
+          curl -L -o upx.zip https://github.com/upx/upx/releases/download/v4.2.1/upx-4.2.1-win64.zip
+          tar -xf upx.zip || unzip upx.zip
+
+      - name: Build Windows executable with UPX and exclusions
+        run: |
+          pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtm_parser3.py;." --onefile --upx-dir upx-4.2.1-win64 --exclude-module=tkinter --exclude-module=unittest --exclude-module=test --exclude-module=pydoc gui.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -91,13 +101,18 @@ jobs:
       - name: Install system libraries for PyQt
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxkbcommon-x11-0 libxcb-randr0 libxcb-xtest0 libxcb-xinerama0 libxcb-shape0 libxcb-xfixes0
+          sudo apt-get install -y libxkbcommon-x11-0 libxcb-randr0 libxcb-xtest0 libxcb-xinerama0 libxcb-shape0 libxcb-xfixes0 upx-ucl
 
-      - name: Build Linux executable
+      - name: Build Linux executable with UPX and exclusions
         run: |
           pyinstaller --name=MHTMLExtractor \
                       --add-data="mhtm_parser3.py:." \
                       --onefile \
+                      --exclude-module=tkinter \
+                      --exclude-module=test \
+                      --exclude-module=unittest \
+                      --exclude-module=pydoc \
+                      --upx-dir /usr/bin \
                       gui.py
 
       - name: Make executable

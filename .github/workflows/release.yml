@@ -64,12 +64,7 @@ jobs:
           pip install PyQt5 PyQtWebEngine requests beautifulsoup4
 
       - name: Build Windows executable
-        run: |
-          pyinstaller --name=MHTMLExtractor ^
-                      --windowed ^
-                      --add-data="mhtml_parser.py;." ^
-                      --onefile ^
-                      mhtml_extractor_gui.py
+        run: pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtml_parser.py;." --onefile mhtml_extractor_gui.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4

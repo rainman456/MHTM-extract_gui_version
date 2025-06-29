@@ -35,20 +35,7 @@ jobs:
           brew install upx
 
       - name: Build macOS executable with PyInstaller, UPX, and exclusions
-        run: |
-          pyinstaller --name=MHTMLExtractor \
-                      --windowed \
-                      --add-data="mhtm_parser3.py:." \
-                      --onefile \
-                      --upx-dir /usr/local/bin \
-                      --exclude-module=tkinter \
-                      --exclude-module=test \
-                      --exclude-module=pydoc \
-                      --exclude-module=unittest \
-                      --exclude-module=matplotlib \
-                      --exclude-module=numpy \
-                      --exclude-module=pandas \
-                      gui.py
+        run: pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtm_parser3.py:." --onefile --upx-dir /usr/local/bin --exclude-module=tkinter --exclude-module=test --exclude-module=pydoc --exclude-module=unittest --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas gui.py
         env:
           PYINSTALLER_NO_BUNDLE: 1
 
@@ -56,7 +43,7 @@ jobs:
         run: |
           mkdir -p dmg-staging/MHTMLExtractor.app
           cp -R dist/MHTMLExtractor.app dmg-staging/
-          hdiutil create -srcfolder dmg-staging -volname "MHTML Extractor" -format UDZO dist/MHTMLExtractor.dmg
+          hdiutil create -srcfolder dmg-staging -volname "MHTML Extractor" -format UDZO -ov -compression 9 dist/MHTMLExtractor.dmg
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
@@ -86,20 +73,7 @@ jobs:
           tar -xf upx.zip || unzip upx.zip
 
       - name: Build Windows executable with UPX and exclusions
-        run: |
-          pyinstaller --name=MHTMLExtractor \
-                      --windowed \
-                      --add-data="mhtm_parser3.py;." \
-                      --onefile \
-                      --upx-dir upx-4.2.1-win64 \
-                      --exclude-module=tkinter \
-                      --exclude-module=unittest \
-                      --exclude-module=test \
-                      --exclude-module=pydoc \
-                      --exclude-module=matplotlib \
-                      --exclude-module=numpy \
-                      --exclude-module=pandas \
-                      gui.py
+        run: pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtm_parser3.py;." --onefile --upx-dir upx-4.2.1-win64 --exclude-module=tkinter --exclude-module=unittest --exclude-module=test --exclude-module=pydoc --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas gui.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -129,22 +103,13 @@ jobs:
           sudo apt-get install -y libxkbcommon-x11-0 libxcb-randr0 libxcb-xtest0 libxcb-xinerama0 libxcb-shape0 libxcb-xfixes0 upx-ucl
 
       - name: Build Linux executable with UPX and exclusions
-        run: |
-          pyinstaller --name=MHTMLExtractor \
-                      --add-data="mhtm_parser3.py:." \
-                      --onefile \
-                      --upx-dir /usr/bin \
-                      --exclude-module=tkinter \
-                      --exclude-module=test \
-                      --exclude-module=unittest \
-                      --exclude-module=pydoc \
-                      --exclude-module=matplotlib \
-                      --exclude-module=numpy \
-                      --exclude-module=pandas \
-                      gui.py
+        run: pyinstaller --name=MHTMLExtractor --add-data="mhtm_parser3.py:." --onefile --upx-dir /usr/bin --exclude-module=tkinter --exclude-module=test --exclude-module=unittest --exclude-module=pydoc --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas gui.py
 
       - name: Make executable
         run: chmod +x dist/MHTMLExtractor
+
+      - name: Strip Linux executable
+        run: strip --strip-unneeded dist/MHTMLExtractor
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
@@ -175,6 +140,9 @@ jobs:
         with:
           name: MHTMLExtractor-linux
           path: artifacts/
+
+      - name: Log artifact sizes
+        run: ls -lh artifacts/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v*.*.*'  # Trigger on version tags like v1.0.0
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:  # Allow manual runs
 
 jobs:
   build-macos:
@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install PyQt5 PyQtWebEngine requests beautifulsoup4
 
       - name: Build macOS executable
         run: |
@@ -63,7 +63,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install PyQt5 PyQtWebEngine requests beautifulsoup4
 
       - name: Build Windows executable
         run: |
@@ -94,9 +94,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install PyQt5 PyQtWebEngine requests beautifulsoup4
 
-      - name: Install system dependencies for PyQt5
+      - name: Install system libraries for PyQt
         run: |
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-x11-0 libxcb-randr0 libxcb-xtest0 libxcb-xinerama0 libxcb-shape0 libxcb-xfixes0

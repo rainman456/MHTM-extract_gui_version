@@ -10,9 +10,6 @@ on:
         description: 'Tag to use for GitHub Release (e.g., v1.0.0)'
         required: true
 
-permissions:
-  contents: write  # Grant write access to create releases and upload assets
-
 jobs:
   build-macos:
     runs-on: macos-latest
@@ -30,12 +27,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
-      - name: Install UPX
+      - name: Build macOS executable with PyInstaller and Strip
         run: |
-          brew install upx
-
-      - name: Build macOS executable with PyInstaller, UPX, and exclusions
-        run: pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtm_parser3.py:." --onefile --upx-dir /usr/local/bin --exclude-module=tkinter --exclude-module=test --exclude-module=pydoc --exclude-module=unittest --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas gui.py
+          pyinstaller --name=MHTMLExtractor \
+                      --windowed \
+                      --add-data="mhtm_parser3.py:." \
+                      --onefile \
+                      --exclude-module=tkinter \
+                      --exclude-module=test \
+                      --exclude-module=pydoc \
+                      --exclude-module=unittest \
+                      gui.py
         env:
           PYINSTALLER_NO_BUNDLE: 1
 
@@ -43,13 +45,15 @@ jobs:
         run: |
           mkdir -p dmg-staging/MHTMLExtractor.app
           cp -R dist/MHTMLExtractor.app dmg-staging/
-          hdiutil create -srcfolder dmg-staging -volname "MHTML Extractor" -format UDZO -ov -compression 9 dist/MHTMLExtractor.dmg
+          hdiutil create -srcfolder dmg-staging -volname "MHTML Extractor" -format UDZO dist/MHTMLExtractor.dmg
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: MHTMLExtractor-macos
-          path: dist/MHTMLExtractor.dmg
+          path: |
+            dist/MHTMLExtractor.app
+            dist/MHTMLExtractor.dmg
 
   build-windows:
     runs-on: windows-latest
@@ -73,7 +77,8 @@ jobs:
           tar -xf upx.zip || unzip upx.zip
 
       - name: Build Windows executable with UPX and exclusions
-        run: pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtm_parser3.py;." --onefile --upx-dir upx-4.2.1-win64 --exclude-module=tkinter --exclude-module=unittest --exclude-module=test --exclude-module=pydoc --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas gui.py
+        run: |
+          pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtm_parser3.py;." --onefile --upx-dir upx-4.2.1-win64 --exclude-module=tkinter --exclude-module=unittest --exclude-module=test --exclude-module=pydoc gui.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -97,19 +102,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
-      - name: Install system libraries for PyQt and UPX
+      - name: Install system libraries for PyQt
         run: |
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-x11-0 libxcb-randr0 libxcb-xtest0 libxcb-xinerama0 libxcb-shape0 libxcb-xfixes0 upx-ucl
 
       - name: Build Linux executable with UPX and exclusions
-        run: pyinstaller --name=MHTMLExtractor --add-data="mhtm_parser3.py:." --onefile --upx-dir /usr/bin --exclude-module=tkinter --exclude-module=test --exclude-module=unittest --exclude-module=pydoc --exclude-module=matplotlib --exclude-module=numpy --exclude-module=pandas gui.py
+        run: |
+          pyinstaller --name=MHTMLExtractor \
+                      --add-data="mhtm_parser3.py:." \
+                      --onefile \
+                      --exclude-module=tkinter \
+                      --exclude-module=test \
+                      --exclude-module=unittest \
+                      --exclude-module=pydoc \
+                      --upx-dir /usr/bin \
+                      gui.py
 
       - name: Make executable
         run: chmod +x dist/MHTMLExtractor
-
-      - name: Strip Linux executable
-        run: strip --strip-unneeded dist/MHTMLExtractor
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
@@ -123,6 +134,16 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
+      - name: Create Git tag if it doesn't exist
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git fetch --tags
+          if ! git rev-parse "refs/tags/${{ github.event.inputs.release_tag }}" >/dev/null 2>&1; then
+            git tag ${{ github.event.inputs.release_tag }}
+            git push origin ${{ github.event.inputs.release_tag }}
+          fi
+
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
@@ -141,16 +162,10 @@ jobs:
           name: MHTMLExtractor-linux
           path: artifacts/
 
-      - name: Log artifact sizes
-        run: ls -lh artifacts/
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            artifacts/MHTMLExtractor.dmg
-            artifacts/MHTMLExtractor.exe
-            artifacts/MHTMLExtractor
+          files: artifacts/**
           tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

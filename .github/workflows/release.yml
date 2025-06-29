@@ -27,9 +27,9 @@ jobs:
         run: |
           pyinstaller --name=MHTMLExtractor \
                       --windowed \
-                      --add-data="mhtml_parser.py:." \
+                      --add-data="mhtm_parser3.py:." \
                       --onefile \
-                      mhtml_extractor_gui.py
+                      gui.py
         env:
           PYINSTALLER_NO_BUNDLE: 1
 
@@ -64,7 +64,7 @@ jobs:
           pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
       - name: Build Windows executable
-        run: pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtml_parser.py;." --onefile mhtml_extractor_gui.py
+        run: pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtm_parser3.py;." --onefile gui.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -96,9 +96,9 @@ jobs:
       - name: Build Linux executable
         run: |
           pyinstaller --name=MHTMLExtractor \
-                      --add-data="mhtml_parser.py:." \
+                      --add-data="mhtm_parser3.py:." \
                       --onefile \
-                      mhtml_extractor_gui.py
+                      gui.py
 
       - name: Make executable
         run: chmod +x dist/MHTMLExtractor

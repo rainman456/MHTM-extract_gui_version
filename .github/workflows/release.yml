@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*.*.*'  # e.g., v1.0.0
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag to use for GitHub Release (e.g., v1.0.0)'
+        required: true
 
 jobs:
   build-macos:
@@ -152,6 +156,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/**
-          tag_name: ${{ github.ref_name != '' && github.ref_name || format('manual-build-v{0}', github.run_number) }}
+          tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

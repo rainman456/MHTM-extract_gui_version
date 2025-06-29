@@ -3,8 +3,8 @@ name: Build and Release MHTML Extractor Executables
 on:
   push:
     tags:
-      - 'v*.*.*'  # Trigger on version tags like v1.0.0
-  workflow_dispatch:  # Allow manual trigger
+      - 'v*.*.*'  # e.g., v1.0.0
+  workflow_dispatch:
 
 jobs:
   build-macos:
@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install PyQt5 PyQtWebEngine requests beautifulsoup4
+          pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
       - name: Build macOS executable
         run: |
@@ -61,7 +61,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install PyQt5 PyQtWebEngine requests beautifulsoup4
+          pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
       - name: Build Windows executable
         run: pyinstaller --name=MHTMLExtractor --windowed --add-data="mhtml_parser.py;." --onefile mhtml_extractor_gui.py
@@ -86,7 +86,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install PyQt5 PyQtWebEngine requests beautifulsoup4
+          pip install PyQt5 PyQtWebEngine requests beautifulsoup4 pyinstaller
 
       - name: Install system libraries for PyQt
         run: |

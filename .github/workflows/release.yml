@@ -1,5 +1,9 @@
 name: Build and Release MHTML Extractor Executables
 
+# Add permissions to grant contents: write
+permissions:
+  contents: write
+
 on:
   push:
     tags:
@@ -134,7 +138,6 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
-      
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
@@ -159,4 +162,4 @@ jobs:
           files: artifacts/**
           tag_name: ${{ github.event.inputs.release_tag || github.ref_name }}
         env:
-          GITHUB_TOKEN: ${{ secrets.releases }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use default GITHUB_TOKEN
